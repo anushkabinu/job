@@ -36,7 +36,8 @@ if user_skills_input:
 
     st.success(f"✅ Based on your skills, you're in cluster #{user_cluster}.")
 
-    matched_jobs = df[df['Cluster'] == user_cluster]
+    matched_jobs = df[df['Predicted_Cluster'] == user_cluster]
+
 
     if not matched_jobs.empty:
         st.subheader("📬 Jobs That Match Your Skills")
