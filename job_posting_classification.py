@@ -219,6 +219,10 @@ X = vectorizer.transform(df['Skills'])
 # Predict clusters
 df['Predicted_Cluster'] = model.predict(X)
 
+
+# Save the complete DataFrame with the Cluster column
+df.to_csv("daily_jobs.csv", index=False)
+
 # Filter for user's preferred cluster
 matched_jobs = df[df['Predicted_Cluster'] == preferred_cluster]
 
