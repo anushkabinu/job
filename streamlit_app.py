@@ -1,39 +1,45 @@
-import os
 import streamlit as st
-
-if not os.path.exists("model.pkl") or not os.path.exists("vectorizer.pkl"):
-    st.error("Model or vectorizer files are missing! Please upload 'model.pkl' and 'vectorizer.pkl'.")
-    st.stop()
-
 import pandas as pd
 import joblib
+import os
 
+st.set_page_config(page_title="Job Notifier", layout="wide")
+st.title("💼 Job Notifier Based on Your Skills")
 
+# Check required files
+if not os.path.exists("model.pkl") or not os.path.exists("vectorizer.pkl"):
+    st.error("❌ Model or vectorizer files are missing! Please upload 'model.pkl' and 'vectorizer.pkl'.")
+    st.stop()
 
-# Load scraped job data
+if not os.path.exists("daily_jobs.csv"):
+    st.error("❌ Job data file 'daily_jobs.csv' is missing! Please run the scraper first.")
+    st.stop()
+
+# Load resources
+model = joblib.load("model.pkl")
+vectorizer = joblib.load("vectorizer.pkl")
 df = pd.read_csv("daily_jobs.csv")
-df['Skills'] = df['Skills'].fillna("").str.lower()
 
-# Vectorize and predict clusters
-X = vectorizer.transform(df['Skills'])
-df['Predicted_Cluster'] = model.predict(X)
+# Display job data
+st.subheader("📋 Latest Job Listings")
+st.dataframe(df[['Title', 'Company', 'Location', 'Skills']])
 
-# Streamlit UI
-st.title("🔍 Job Alert System")
-st.markdown("Get job listings that match your interests.")
+# User input
+st.subheader("🔍 Get Notified for Jobs Matching Your Skills")
+user_skills_input = st.text_input("Enter your skills (comma-separated)", "")
 
-# User selects cluster
-unique_clusters = sorted(df['Predicted_Cluster'].unique())
-selected_cluster = st.selectbox("Choose your preferred job category (Cluster):", unique_clusters)
+if user_skills_input:
+    user_skills_list = [s.strip() for s in user_skills_input.split(",") if s.strip()]
+    user_skills_str = " ".join(user_skills_list)
+    user_vector = vectorizer.transform([user_skills_str])
+    user_cluster = model.predict(user_vector)[0]
 
-# Show results
-matched = df[df['Predicted_Cluster'] == selected_cluster]
-st.write(f"### 🎯 Found {len(matched)} jobs in your preferred category.")
+    st.success(f"✅ Based on your skills, you're in cluster #{user_cluster}.")
 
-if not matched.empty:
-    st.dataframe(matched[['Title', 'Company', 'Location', 'Skills']])
-else:
-    st.info("No matching jobs at the moment.")
+    matched_jobs = df[df['Cluster'] == user_cluster]
 
-# Optional: Download CSV
-st.download_button("Download Matching Jobs as CSV", matched.to_csv(index=False), file_name="matching_jobs.csv")
+    if not matched_jobs.empty:
+        st.subheader("📬 Jobs That Match Your Skills")
+        st.dataframe(matched_jobs[['Title', 'Company', 'Location', 'Skills']])
+    else:
+        st.info("No jobs found in your preferred cluster today. Please check back later.")
