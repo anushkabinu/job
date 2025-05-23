@@ -226,12 +226,12 @@ df.to_csv("daily_jobs.csv", index=False)
 # Filter for user's preferred cluster
 matched_jobs = df[df['Predicted_Cluster'] == preferred_cluster]
 
-# Alert logic: show matched jobs
 if not matched_jobs.empty:
     print(f"🔔 ALERT: {len(matched_jobs)} job(s) matched your preferred category!")
     print(matched_jobs[['Title', 'Company', 'Location', 'Skills']])
 else:
     print("✅ No new jobs matched your preferred category today.")
+
 from sklearn.cluster import KMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 
