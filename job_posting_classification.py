@@ -228,3 +228,17 @@ if not matched_jobs.empty:
     print(matched_jobs[['Title', 'Company', 'Location', 'Skills']])
 else:
     print("✅ No new jobs matched your preferred category today.")
+from sklearn.cluster import KMeans
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Assume `df` is your DataFrame with a 'Skills' column
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(df['Skills'])
+
+model = KMeans(n_clusters=5, random_state=42)
+model.fit(X)
+import joblib
+
+# Save trained model and vectorizer to files
+joblib.dump(model, "model.pkl")
+joblib.dump(vectorizer, "vectorizer.pkl")
