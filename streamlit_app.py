@@ -1,10 +1,14 @@
+import os
 import streamlit as st
+
+if not os.path.exists("model.pkl") or not os.path.exists("vectorizer.pkl"):
+    st.error("Model or vectorizer files are missing! Please upload 'model.pkl' and 'vectorizer.pkl'.")
+    st.stop()
+
 import pandas as pd
 import joblib
 
-# Load model and vectorizer
-model = joblib.load("model.pkl")
-vectorizer = joblib.load("vectorizer.pkl")
+
 
 # Load scraped job data
 df = pd.read_csv("daily_jobs.csv")
