@@ -20,6 +20,15 @@ model = joblib.load("model.pkl")
 vectorizer = joblib.load("vectorizer.pkl")
 df = pd.read_csv("daily_jobs.csv")
 
+# Check if 'Predicted_Cluster' column exists, else create it
+if 'Predicted_Cluster' not in df.columns:
+    # Fill missing skills with empty string and lower case for consistency
+    df['Skills'] = df['Skills'].fillna("").str.lower()
+    X = vectorizer.transform(df['Skills'])
+    df['Predicted_Cluster'] = model.predict(X)
+    # Optional: save updated CSV with clusters to avoid recomputing next time
+    df.to_csv("daily_jobs.csv", index=False)
+
 # Display job data
 st.subheader("📋 Latest Job Listings")
 st.dataframe(df[['Title', 'Company', 'Location', 'Skills']])
@@ -30,14 +39,13 @@ user_skills_input = st.text_input("Enter your skills (comma-separated)", "")
 
 if user_skills_input:
     user_skills_list = [s.strip() for s in user_skills_input.split(",") if s.strip()]
-    user_skills_str = " ".join(user_skills_list)
+    user_skills_str = " ".join(user_skills_list).lower()
     user_vector = vectorizer.transform([user_skills_str])
     user_cluster = model.predict(user_vector)[0]
 
     st.success(f"✅ Based on your skills, you're in cluster #{user_cluster}.")
 
     matched_jobs = df[df['Predicted_Cluster'] == user_cluster]
-
 
     if not matched_jobs.empty:
         st.subheader("📬 Jobs That Match Your Skills")
